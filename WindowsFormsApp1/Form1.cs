@@ -117,7 +117,6 @@ namespace WindowsFormsApp1
                     if (sampleDiff < sampleLoopStartInt || sampleLoopEndInt <= 0 || sampleDiff <= 0)
                     {
                         sampleDiff = 0;
-                        MessageBox.Show("We did the Zero thing.", "Hey Boss,", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                     byte[] intDiffBytes = BitConverter.GetBytes(sampleDiff);
                     outputNubFile.BaseStream.Position = 0x54;

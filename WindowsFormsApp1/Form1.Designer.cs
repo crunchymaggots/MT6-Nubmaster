@@ -211,7 +211,7 @@
             this.MaximumSize = new System.Drawing.Size(402, 358);
             this.MinimumSize = new System.Drawing.Size(402, 358);
             this.Name = "Form1";
-            this.Text = "MT6 Nubmaster";
+            this.Text = "The Nubmaster";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.ResumeLayout(false);

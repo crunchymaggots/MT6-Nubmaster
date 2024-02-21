@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{8F55CFB5-602F-4350-BA28-3A97022E50B9}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>MT6Nubmaster</RootNamespace>
-    <AssemblyName>MT6 Nubmaster</AssemblyName>
+    <RootNamespace>Nubmaster</RootNamespace>
+    <AssemblyName>Nubmaster</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
