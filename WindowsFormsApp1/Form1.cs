@@ -160,6 +160,13 @@ namespace WindowsFormsApp1
                 btnNoLoop.Enabled = true;
                 btnLoopUseFile.Enabled = true;
                 btnLoopWhole.Enabled = true;
+
+                FileInfo sndFull = new FileInfo(openNew.FileName);
+                long sampleLengthLong = sndFull.Length;
+                sampleLengthLong = (sampleLengthLong / 4);
+                string sampleLengthStr = Convert.ToString(sampleLengthLong);
+
+                tbLoopEnd.Text = sampleLengthStr;
             }
             else
             {
