@@ -1,7 +1,7 @@
 # MT6-Nubmaster
-Utility for generating .nub files for MT6
+Utility for generating .nub files for ~~MT6~~ MT4 to MT6, and possibly beyond. Appears to be working with more titles that use NUSound2.
 
-Full disclosure, I'm a novice, so expect the source to be ass.
+Full disclosure, I'm a novice, so expect the source to be ass. This is basically just a shortcut to doing the hex editing manually.
 
 ## Preparing your audio track
 The program is making a few assumptions in it's current version:
