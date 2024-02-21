@@ -15,6 +15,10 @@ namespace WindowsFormsApp1
         OpenFileDialog openNew = new OpenFileDialog();
         OpenFileDialog openLoop = new OpenFileDialog();
 
+        string lastNubLocation = null;
+        string lastSndLocation = null;
+        string lastIntroLocation = null;
+
         private void btnGenerate_Click(object sender, EventArgs e)
         {
             if (lbOriginalPath.Text != "Current File:   " + Path.GetFileName(openOriginal.FileName))  //No .nub file selected
@@ -142,16 +146,21 @@ namespace WindowsFormsApp1
 
         private void btnOpenOriginal_Click(object sender, EventArgs e)
         {
+            if (lastNubLocation != null) { openOriginal.InitialDirectory = lastNubLocation; }
             openOriginal.Filter = "nub File (*.nub)|*.nub";
             openOriginal.ShowDialog();
             if (openOriginal.FileName != "")
-            { lbOriginalPath.Text = "Current File:   " + Path.GetFileName(openOriginal.FileName); }
+            {
+                lbOriginalPath.Text = "Current File:   " + Path.GetFileName(openOriginal.FileName);
+                lastNubLocation = Path.GetDirectoryName(openOriginal.FileName);
+            }
             else
             { lbOriginalPath.Text = "Current File:   None"; }
         }
 
         private void btnOpenSND_Click(object sender, EventArgs e)
         {
+            if (lastSndLocation != null) { openNew.InitialDirectory = lastSndLocation; }
             openNew.Filter = "snd File (*.snd)|*.snd";
             openNew.ShowDialog();
             if (openNew.FileName != "")
@@ -167,6 +176,7 @@ namespace WindowsFormsApp1
                 string sampleLengthStr = Convert.ToString(sampleLengthLong);
 
                 tbLoopEnd.Text = sampleLengthStr;
+                lastSndLocation = Path.GetDirectoryName(openNew.FileName);
             }
             else
             {
@@ -180,6 +190,7 @@ namespace WindowsFormsApp1
         private void btnLoopUseFile_Click(object sender, EventArgs e)
         {
             MessageBox.Show("Instructions: Select a version of your .snd file, where the end of the track is where you want the loop to start from.\n\nIn other words, select a copy of the song that only contains the intro.", "How to Use", MessageBoxButtons.OK);
+            if (lastIntroLocation != null) { openLoop.InitialDirectory = lastIntroLocation; }
             openLoop.Filter = "snd File (*.snd)|*.snd";
             openLoop.ShowDialog();
             if (openLoop.FileName != "")
@@ -196,6 +207,7 @@ namespace WindowsFormsApp1
 
                 tbLoopStart.Text = sampleLoopStr;
                 tbLoopEnd.Text = sampleLengthStr;
+                lastIntroLocation = Path.GetDirectoryName(openLoop.FileName);
             }
         }
 
