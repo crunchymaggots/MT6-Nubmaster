@@ -17,12 +17,12 @@ namespace WindowsFormsApp1
 
         private void btnGenerate_Click(object sender, EventArgs e)
         {
-            if (lbOriginalPath.Text != openOriginal.FileName)  //No .nub file selected
+            if (lbOriginalPath.Text != "Current File:   " + Path.GetFileName(openOriginal.FileName))  //No .nub file selected
             {
                 MessageBox.Show("Please select a .nub song to act as a donor file.\n\nDo not worry, it will NOT be overwritten.", "Missing .nub file",MessageBoxButtons.OK,MessageBoxIcon.Error);
                 return;
             }
-            if (lbNewPath.Text != openNew.FileName)  //No .snd file selected
+            if (lbNewPath.Text != "Current File:   " + Path.GetFileName(openNew.FileName))  //No .snd file selected
             {
                 MessageBox.Show("Please select a .snd file. Dingus.", "Missing .snd file", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -32,30 +32,44 @@ namespace WindowsFormsApp1
             long sampleLengthLong = sndInfo.Length;
             int sampleLengthInt = Convert.ToInt32(sampleLengthLong);
             
-            if (tbLoop.Text == "")  //No loop point declared
+            if (tbLoopStart.Text == "")  //No loop start declared
             {
-                MessageBox.Show("Please specify (in samples) the point at which the song should loop.", "Loop point missing", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Please specify (in samples) the point at which the song loop should start.\n\nThis is the transition from the song intro to the main loop body.", "Loop point missing", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            int sampleLoopInt;
-            if (Int32.TryParse(tbLoop.Text, out sampleLoopInt)) { }  //Ensure that the loop value is actually a number
+            if (tbLoopEnd.Text == "")  //No loop end declared
+            {
+                MessageBox.Show("Please specify (in samples) the point at which the song loop should end.\n\nThis is the point where the song goes back to the start of the loop", "Loop point missing", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            int sampleLoopStartInt;
+            int sampleLoopEndInt;
+            if (Int32.TryParse(tbLoopStart.Text, out sampleLoopStartInt) && Int32.TryParse(tbLoopEnd.Text, out sampleLoopEndInt)) { }  //Ensure that the loop value is actually a number
             else
             {
                 MessageBox.Show("Not a valid number, dingus.", "C'mon, man", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            if (sampleLoopInt < 0 || sampleLoopInt > 1000000000)  //Ensure that the loop point is a sensible value
+            if (sampleLoopStartInt < 0 || sampleLoopStartInt > 1000000000 || sampleLoopEndInt < 0 || sampleLoopEndInt > 1000000000)  //Ensure that the loop point is a sensible value
             {
                 MessageBox.Show("Just don't.", "Son,", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            sampleLoopInt = sampleLoopInt * 4;
-            if (sampleLoopInt > sampleLengthInt)  //Ensure that the loop occurs before the song ends
+            sampleLoopStartInt = sampleLoopStartInt * 4;
+            sampleLoopEndInt = sampleLoopEndInt * 4;
+            if (sampleLoopStartInt > sampleLengthInt || sampleLoopEndInt > sampleLengthInt)  //Ensure that the loop occurs before the song ends
             {
                 MessageBox.Show("Your loop point is occurring after the song has already ended.", "Loop occurs after song has ended.", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (sampleLoopStartInt > sampleLoopEndInt)  //Ensure that the loop occurs before the song ends
+            {
+                MessageBox.Show("Your loop start is occuring after the loop end has already happened.\n\nDon't do that. It goes the other way.", "Loop occurs after song has ended.", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -91,7 +105,7 @@ namespace WindowsFormsApp1
                     }
 
                     //Write loop start point to header
-                    byte[] intLoopBytes = BitConverter.GetBytes(sampleLoopInt);
+                    byte[] intLoopBytes = BitConverter.GetBytes(sampleLoopStartInt);
                     outputNubFile.BaseStream.Position = 0x50;
                     for (int i = 0; i < 4; i++)
                     {
@@ -99,8 +113,12 @@ namespace WindowsFormsApp1
                     }
 
                     //Write loop length to header
-                    int sampleDiff = sampleLengthInt - sampleLoopInt;
-                    if (sampleLoopInt == 0) { sampleDiff = 0; }
+                    int sampleDiff = sampleLoopEndInt - 1792 - sampleLoopStartInt;
+                    if (sampleDiff < sampleLoopStartInt || sampleLoopEndInt <= 0 || sampleDiff <= 0)
+                    {
+                        sampleDiff = 0;
+                        MessageBox.Show("We did the Zero thing.", "Hey Boss,", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                     byte[] intDiffBytes = BitConverter.GetBytes(sampleDiff);
                     outputNubFile.BaseStream.Position = 0x54;
                     for (int i = 0; i < 4; i++)
@@ -120,7 +138,7 @@ namespace WindowsFormsApp1
                 }
             }
             inputNubFile.Close();
-            MessageBox.Show(".nub File Generated", "Operation Commplete", MessageBoxButtons.OK);
+            MessageBox.Show(".nub File Generated", "Operation Complete", MessageBoxButtons.OK);
         }
 
         private void btnOpenOriginal_Click(object sender, EventArgs e)
@@ -128,9 +146,9 @@ namespace WindowsFormsApp1
             openOriginal.Filter = "nub File (*.nub)|*.nub";
             openOriginal.ShowDialog();
             if (openOriginal.FileName != "")
-            { lbOriginalPath.Text = openOriginal.FileName; }
+            { lbOriginalPath.Text = "Current File:   " + Path.GetFileName(openOriginal.FileName); }
             else
-            { lbOriginalPath.Text = "Path:"; }
+            { lbOriginalPath.Text = "Current File:   None"; }
         }
 
         private void btnOpenSND_Click(object sender, EventArgs e)
@@ -138,9 +156,19 @@ namespace WindowsFormsApp1
             openNew.Filter = "snd File (*.snd)|*.snd";
             openNew.ShowDialog();
             if (openNew.FileName != "")
-            { lbNewPath.Text = openNew.FileName; }
+            {
+                lbNewPath.Text = "Current File:   " + Path.GetFileName(openNew.FileName);
+                btnNoLoop.Enabled = true;
+                btnLoopUseFile.Enabled = true;
+                btnLoopWhole.Enabled = true;
+            }
             else
-            { lbNewPath.Text = "Path:"; }
+            {
+                lbNewPath.Text = "Current File:   None";
+                btnNoLoop.Enabled = false;
+                btnLoopUseFile.Enabled = false;
+                btnLoopWhole.Enabled = false;
+            }
         }
 
         private void btnLoopUseFile_Click(object sender, EventArgs e)
@@ -154,29 +182,34 @@ namespace WindowsFormsApp1
                 long sampleLoopLong = sndLoop.Length;
                 sampleLoopLong = (sampleLoopLong / 4);
                 string sampleLoopStr = Convert.ToString(sampleLoopLong);
-                tbLoop.Text = sampleLoopStr;
+
+                FileInfo sndFull = new FileInfo(openNew.FileName);
+                long sampleLengthLong = sndFull.Length;
+                sampleLengthLong = (sampleLengthLong / 4);
+                string sampleLengthStr = Convert.ToString(sampleLengthLong);
+
+                tbLoopStart.Text = sampleLoopStr;
+                tbLoopEnd.Text = sampleLengthStr;
             }
+        }
+
+        private void btnNoLoop_Click(object sender, EventArgs e)
+        {
+            tbLoopStart.Text = "0";
+            tbLoopEnd.Text = "0";
         }
 
         private void btnLoopWhole_Click(object sender, EventArgs e)
         {
-            if (openNew.FileName == "")
-            {
-                MessageBox.Show("Please select your .snd file first.", "Missing .snd file", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+            if (openNew.FileName == "") { return; }
 
             FileInfo sndFull = new FileInfo(openNew.FileName);
             long sampleLengthLong = sndFull.Length;
             sampleLengthLong = (sampleLengthLong / 4);
             string sampleLengthStr = Convert.ToString(sampleLengthLong);
-            tbLoop.Text = sampleLengthStr;
 
-        }
-
-        private void btnNoLoop_Click(object sender, EventArgs e)
-        {
-            tbLoop.Text = "0";
+            tbLoopStart.Text = "0";
+            tbLoopEnd.Text = sampleLengthStr;
         }
     }
 }
